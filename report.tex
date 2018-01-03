@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage[dvips]{graphicx}
+\begin{document}
+
+\begin{abstract}
+  The report describes two attempts to train
+  the artificial neural network (ANN) to distinguish
+  10 categories data given in CIFAR-10 benchmark dataset.
+\end{abstract}
+
+\section{Problem ovierview}
+
+The task was to write a scripts for image recognition, specifically CIFAR-10 dataset.
+The dataset contains 60000 color images of size 32 by 32 grouped into 10 categories.
+The reference set is divided into 5 training and one test set, each of size 10000
+images. The suggested methods for performing the task was transfer learning and
+building the shallow classifier.
+
+Before these two methods will be described, a few words should be written about
+image recognition, at general. The state of the art method is so-called
+convolutional neural network. The canonical neural network formulation assumes
+that  the signal is transmitted from input layer, through a number of hidden layers
+to the output layer, where each layer can be equivalent $i$ equations of the form
+\begin{equation}
+  \label{eq}
+  out_i = f \left( \sum_{j=1}^{N} a_{i,j} in_j + b_i \right)
+\end{equation}
+where $in$ are the input signals $out$ are outputs, $b$ is a bias
+defined for each output neuron separately and $f$ is (nonlinear)
+activation function. Parametest $a_{i,j}$ are supposed to be found during training
+(optimalization) process.
+
+In case of convolutional network, before the data are passed through
+layers equivalent to (\ref{eq}), are convoluted and passed through nonlinear
+filters, like decimation, mean. The coefficients of the filters are also
+subject to be optimized. What is worth to note, the number of possible states
+within NN layer is larger than number of states in analyzed picture, which
+make system of neurons strongly overdetermined.
+
+
+
+\section{Preliminary tasks}
+
+Before any image processing can be done, the data must be downloaded and appropriately prepared
+for further analysis. Image datasets are relatively big, compared to other ML problems, thus
+the data should be downloaded once and kept for further processing. The {\bf cifar\_init.py}
+script responsible, for downloading CIFAR-10 dataset checks if the data are present in current directory, and downloads is if it is necessary. The script calls external commands: {\bf wget} and
+{\bf tar} so it must be run in UNIX-like environment (Linux,BSD,Darwin,OS X).
+
+\begin{figure}[!hbt]
+  \centering
+  \includegraphics[width=.8\textwidth]{dset.eps}
+  \caption{Example figures grouped into 10 categories}
+\end{figure}
+
+
+\section{Shallow Classifier}
+The shallow classifier, was build according to \cite{shallow}. The difference
+between full CNN and the shallow classifier is the definition of conolutional
+filters. In typical model, the coefficients of the filters are optimized,
+in the simplified approach they are fixed. In \cite{shallow}, as
+the filters act: vertical and horizontal bars, central parts of classified
+figures and the set trained for another model. At general, training networks
+for image recognition is very resource consuming task, thus reuse of existent
+results is generally a good idea.
+
+In this task, the classifier was build using Haar wavelets and Legendre polynomials
+as for convolutional layer. Since the strides for convolution are larger than one,
+the side effect of the convolution is decimation, thus no explicit downsampling is
+needed.
+
+\section{Transfer learning}
+
+The aim of transfer learning is to utilize existing trained network for classification
+of another set of data. For this task, the {\em inception-v3} model has been chosen.
+The flow of the network os presented in Fig \ref{incept}. According to the
+figure, the data was passed directly to {\em ExpandDims} layer, in order to avoid
+jpeg decompression and integer to float conversion, since the CIFAR data are
+natively floating point. The output was taken from {\em pool\_3} layer,
+the layer of the smalles possible size but before the final classification.
+The model is trained to distinguish 2048 classes, while only 10 are needed.
+
+
+\begin{figure}[!hbt]
+  \centering
+  \includegraphics[width=.3\textwidth]{inception.eps}
+  \caption{\label{incept}Inception-v3 model graph}
+\end{figure}
+
+%
+%Legendre n=8, skip 2, L=128 d=2
+%23 0.123136 181 1.37976
+%
+% Haar 128
+% 14 0.0710252 184 1.21792
+% Haar 256
+%17 0.0850028 168 1.32363
+
+\begin{thebibliography}{1}
+
+\bibitem{tf} Tenorflow Documentation {\em https://www.tensorflow.org/api\_docs/python/tf}
+\bibitem{tfsvm} Tensorflow tutorial {\em https://www.kernix.com/blog/image-classification-with-a-pre-trained-deep-neural-network\_p11}
+\bibitem{cifar} Alex Krizhevsky: {\em Learning Multiple Layers of Features from Tiny Images}. Tech report 2009.
+\bibitem{inception} Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jonathon Shlens, Zbigniew Wojna, {\em Rethinking the Inception Architecture for Computer Vision},  arXiv:1512.00567, Dec 2015.
+\bibitem{shallow} Mark D. McDonnell, Tony Vladusich: {\em Enhanced Image Classification With a Fast-Learning Shallow Convolutional Neural Network},  	arXiv:1503.04596, Aug 2015.
+  
+
+\end{thebibliography}
+\end{document}
