@@ -32,7 +32,8 @@ test_features=test_set[:,1:no_feats]
 
 clf = svm.LinearSVC(C=.1, loss='squared_hinge', penalty='l2',multi_class='ovr',max_iter=2000)
 clf.fit(train_features, train_labels)
-y_pred = clf.predict(test_features)
-print(list(y_pred[1:1000]))
-print(np.count_nonzero(y_pred-test_labels))
+pred = clf.predict(test_features)
+#print(list(y_pred[1:1000]))
+print("Number of missed hits (of 10000)")
+print(np.count_nonzero(pred-test_labels))
 #print(np.count_nonzero(model_response-test_labels))

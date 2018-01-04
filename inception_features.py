@@ -8,19 +8,26 @@ from tensorflow.python.platform import gfile
 import pandas as pd
 import pickle
 import time
+import sys
 
 def create_graph():
 
-    try:
-        with tf.gfile.FastGFile('classify_image_graph_def.pb', 'rb') as f:
+    # an automatic download could be put here,
+    # but it is likely one have this file somewhere
+    
+    if not os.path.isfile('classify_image_graph_def.pb'):
+        print("")
+        print('No classify_image_graph_def.pb in current directory')
+        print('Download it and extract from http://download.tensorflow.org/models/image/imagenet/inception-2015-12-05.tgz')
+        sys.exit(1)
+    
+    with tf.gfile.FastGFile('classify_image_graph_def.pb', 'rb') as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
             _=tf.import_graph_def(graph_def, name='')
             graph_def
             return None
-    except EnvironmentError: 
-        print('No classify_image_graph_def.pb in current directory')
-        print('Download it from "https://github.com/taey16/tf/blob/master/imagenet/classify_image_graph_def.pb"')
+
     
 
     

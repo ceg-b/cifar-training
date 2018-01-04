@@ -29,8 +29,9 @@ for o, a in opts:
 ##################################################################
 
 if os.path.isfile(cifar_file) and not force_download:
-    print("Looks like cifar data are in cwd")
+    print("Looks like CIFAR data are in cwd")
 else:
+    print("Start downloading CIFAR, be patient...")
     p = sbp.Popen(["wget "+cifar_link+cifar_file], shell=True,stdout=sbp.PIPE,stderr=sbp.PIPE)
     (out,err) = p.communicate();
     code=p.returncode
