@@ -1,22 +1,36 @@
 \documentclass{article}
 \usepackage[dvips]{graphicx}
+
+\author{Micha\l{ }Wiktor}
+\title{CIFAR-10 excercise}
+\date{}
+\renewcommand{\abstract}{\begin{flushleft}{\bf Summary}\end{flushleft}}
+
+\addtolength{\textwidth}{.8in}
+\addtolength{\hoffset}{-.4in}
+
+\addtolength{\textheight}{1.1in}
+\addtolength{\voffset}{-.5in}
+
+
+
 \begin{document}
 
+\maketitle
 \begin{abstract}
-  The report describes two attempts to train
-  the artificial neural network (ANN) to distinguish
-  10 categories data given in CIFAR-10 benchmark dataset.
-  Two approaches: shallow classifier and transfer learning were presented.
+  The report describes two attempts classify
+  10 categories of figures given in CIFAR-10 dataset.
+  Two approaches: shallow classifier based on simple neural network
+  and transfer learning is presented.
   The former was unsuccessful, due to improper choice of fixed
   convolution filters. The latter resulted in 88\% accuracy,
   which is not the state of the art result, but undoubtedly positively
-  verifies the transfer learning approach
-  
+  verifies the transfer learning approach and this specific implementation.
 \end{abstract}
 
 \section{Problem overview}
 
-The task was to write a scripts for image recognition, specifically CIFAR-10 dataset.
+The task was to write a number of scripts for image recognition, specifically CIFAR-10 dataset.
 It contains 60000 color images of size 32 by 32 grouped into 10 categories.
 The reference set is divided into 5 training and one test set, each of size 10000
 images. The suggested methods for performing the task was transfer learning and
@@ -25,22 +39,22 @@ building the shallow classifier.
 Before these two methods will be described, a few words should be written about
 image recognition, at general. The state of the art method is so-called
 convolutional neural network. The canonical neural network formulation assumes
-that  the signal is transmitted from input layer, through a number of hidden layers
-to the output layer, where each of them can be equivalent $i$ equations of the form
+that  the data are transmitted from input layer, through a number of hidden layers
+to the output layer, where each of the layers can be equivalent $i$ equations of the form
 \begin{equation}
   \label{eq}
   out_i = f \left( \sum_{j=1}^{N} a_{i,j} in_j + b_i \right)
 \end{equation}
 where $in$ are the input signals $out$ are outputs, $b$ is a bias
-defined for each output neuron separately and $f$ is (nonlinear)
+defined for each output neuron separately and $f$ is (usually nonlinear)
 activation function. Parameters $a_{i,j}$ are supposed to be found during training
 (optimization) process.
 
-In case of convolutional neural network, before the data are passed through
-layers equivalent to (\ref{eq}), they are convoluted and passed through nonlinear
+In case of convolutional neural network (CNN), before the data are passed through
+layers equivalent to (\ref{eq}), they are and passed through nonlinear and convolution
 filters. The coefficients of the filters are also subject to be optimized.
 What is worth to note, the number of possible states
-within NN layer is larger than number of states in analyzed picture, which
+within CNN layer is larger than number of states in analyzed picture, which
 make system of neurons strongly overdetermined.
 
 
@@ -49,22 +63,22 @@ make system of neurons strongly overdetermined.
 Before any image processing can be done, the data must be downloaded and appropriately prepared
 for further analysis. Image datasets are relatively big, thus
 the data should be downloaded once and kept for further processing. The {\bf cifar\_init.py}
-script responsible, for downloading CIFAR-10 dataset checks if the data are present in current directory,
+script, responsible for downloading CIFAR-10 dataset, checks if the data are present in current directory,
 and downloads is if it is necessary. The script calls external commands: {\bf wget} and
 {\bf tar} so it must be run in UNIX-like environment (Linux,BSD,Darwin,OS X).
 
 \begin{figure}[!hbt]
   \centering
-%  \includegraphics[width=.8\textwidth]{dset.eps}
-  \caption{Example figures grouped into 10 categories}
+  \includegraphics[width=.8\textwidth]{dset.eps}
+  \caption{Example figures grouped into 10 categories. Plot produced by  {\bf cifar\_init.py}.}
 \end{figure}
 
 
 \section{Shallow Classifier \label{sec}}
 
-The shallow classifier, was build according to \cite{shallow}. The difference
+The shallow classifier, was build according to \cite{shallow}. One of the differences
 between full CNN and the shallow classifier is the definition of convolutional
-filters. In canonical CNN model, the coefficients of the filters are optimized,
+filters. In canonical CNN model, the coefficients of the filters are optimized while
 in the simplified approach they are fixed. In \cite{shallow}, as
 the filters act: vertical and horizontal bars, central parts of classified
 figures and the set trained for another model. At general, training networks
@@ -74,15 +88,16 @@ results is generally a good idea.
 In this task, the classifier was build using Haar wavelets and Legendre polynomials
 as for convolutional layer. Since the strides for convolution are larger than one,
 the side effect of the convolution is decimation, thus no explicit downsampling is
-needed. However, the results were disappointing. Although for the
+needed. The results, however, were disappointing. Although for the
 train set the 2 layer hidden network of 128 or 256 neurons feed by
-the data filtered by above mentioned filters is was possible to get 90\% match,
-the hit rate for the testing set was approximately 10\%, which is
+the data filtered by above mentioned filters is was possible to get 90\% match for
+train set, but applying the classifier to the test batch resulted
+in approximately 10\% accuracy, which is
 what one could expect randomly labeling the images. 
 
 The results were calculated with scripts {\bf shallow4.py} and {\bf shallow\_leg.py}.
 No improvement has been observed when some simple shapes (bar,dot) were used
-{\bf shallow\_arb.py}. The conclusion is, that the filters in the shallow
+({\bf shallow\_arb.py}). The conclusion is, that the filters in the shallow
 classifier, although set arbitrarily, must reflect some knowledge about
 the classified object.
 
@@ -93,59 +108,61 @@ the classified object.
 
 The aim of transfer learning is to utilize existing trained network for classification
 of another set of data. For this task, the {\em inception-v3} model has been chosen.
-The flow of the network os presented in Fig. \ref{incept}. According to the
+The flow of the network is presented in Fig. \ref{incept}. According to the
 figure, the data was passed directly to {\em ExpandDims} layer, in order to avoid
 jpeg decompression and integer to float conversion, since the CIFAR data are
 floating point. The output was taken from {\em pool\_3} layer,
-which has the smalles possible size but is placed before the final classification.
+which has the smallest possible size before the final classification.
 The model is trained to distinguish 2048 classes, while only 10 are needed.
 
 \begin{figure}[!hbt]
   \centering
-%  \includegraphics[width=.3\textwidth]{inception.eps}
-  \caption{\label{incept}Inception-v3 model graph}
+  \includegraphics[angle=-90,width=.95\textwidth]{inception.eps}
+  \caption{\label{incept}Inception-v3 model graph.}
 \end{figure}
 
-The first part of the toolchain is to process CIFAR data through the
-graph. The responsible script is  {\bf inception\_features.py}.
+The first part of the toolchain is to process the CIFAR data through the
+the inception-v3 graph ({\bf inception\_features.py} script).
 It takes the image data and outputs a large csv file (approx 300M)
 per batch. As expected, the response of neurons responsible for activating
 several of 2048 was generally much stronger than others.
 
-
 \begin{figure}[!hbt]
   \centering
-%  \includegraphics[width=.3\textwidth]{inception.eps}
-  \caption{\label{svd1}Inception-v3 model graph}
+  \includegraphics[angle=-90,width=.6\textwidth]{train_set.eps}
+  \caption{\label{svd1}Placement of selected train images (groupped by color) depended on first two singular vectors.}
 \end{figure}
 
 \begin{figure}[!hbt]
   \centering
-%  \includegraphics[width=.3\textwidth]{inception.eps}
-  \caption{\label{svd2}Inception-v3 model graph}
+  \includegraphics[angle=-90,width=.6\textwidth]{test_set.eps}
+  \caption{\label{svd2}Placement of selected test images (groupped by color) depended on first two singular vectors.}
 \end{figure}
 
-In order to, at least partially, visualize so big set, two vectors,
-corresponding to the biggest singular values were chosen. As seen
-in Figures \ref{svd1} and \ref{svd2}, the colors (corresponding
+In order to, at least partially, visualize so large set, two vectors,
+corresponding to two biggest singular values were chosen as coordinates.
+As seen in Figures \ref{svd1} and \ref{svd2}, the colors (corresponding
 to different labels) are partially separable. This observation
 resulted in an idea to use the singular vectors instead
-of direct {\it inception-v3} output. This approach, however
-resulted in a very poor result: the hit rate for the test
+of direct {\it inception-v3} output. This approach, however,
+resulted in a very poor result: the hit rate for the test batch
 did not exceed  60\%. On the contrary, when all 2048
 features were used for svm classification, the accuracy
-was as large as 88\%. The result were calculated using 
-{\bf inception\_svm.py} script.
+was as large as 87\% (1277 misses for 10000 cases). The result were calculated using 
+{\bf inception\_svm.py} script. Linear classifier was used due to stability
+problems with other kernels.
 
 \section{Concluding remarks}
 
-For this task, very helpful were tutorials \cite{tf}, \cite{tfsvm}.
+For this task, very helpful tutorials were \cite{tf}, \cite{tfsvm}.
 The most creative part was training the shallow classifier,
-unfortunately with no great success, however changes suggested
-in section \ref{sec}, namely better choice of filters
+unfortunately with no great success. Changes suggested
+in section \ref{sec}, however, namely better choice of filters
 should result in significant improvement. It would require
 spending more time, and some human interaction
 in order to get some important and useful heuristics.
+All scripts are put in
+{\sc https://github.com/ceg-b/cifar-training}
 
 
 
